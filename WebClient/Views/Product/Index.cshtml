@@ -1,0 +1,56 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model IEnumerable<BusinessObjects.Models.Product>
+
+<h1>Products List</h1>
+<p>
+	<a asp-action="Create">Create</a>
+</p>
+<table c1ass="table">
+	<thead>
+		<tr>
+			<th>
+				@Html.DisplayNameFor(model => model.ProductId)
+			</th>
+			<th style="padding-left:20px">
+				@Html.DisplayNameFor(model => model.ProductName)
+			</th>
+			<th style="padding-left:20px">
+				@Html.DisplayNameFor(model => model.CategoryId)
+			</th>
+			<th style="padding-left:20px">
+				@Html.DisplayNameFor(model => model.UnitPrice)
+			</th>
+			<th style="padding-left:20px">
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in Model)
+		{
+			<tr>
+				<th>
+					@item.ProductId
+				</th>
+				<th style="padding-left:20px">
+					@item.ProductName
+				</th>
+				<th style="padding-left:20px">
+					@item.Category.CategoryName
+				</th>
+				<th style="padding-left:20px">
+					@item.UnitPrice
+				</th>
+				<td style="padding-left:20px">
+					<a href="/Product/Update?id=@item.ProductId">Update</a>
+					<form method="post" action="@Url.Action("Delete", new { id = item.ProductId })" style="display:inline">
+						<button type="submit" class="btn-link">Delete</button>
+					</form>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
