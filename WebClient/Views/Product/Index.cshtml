@@ -2,68 +2,92 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+	var categories = ViewData["Categories"] as SelectList;
 }
 @model IEnumerable<BusinessObjects.Models.Product>
 
 <h1>Index</h1>
+<div>
+	<label for="category">Category:</label>
+	@Html.DropDownList("category", categories, "All Categories", new { onchange = "onCategoryChange()" })
+	<button type="button" style="border-radius:8px; text-decoration: none" onclick="navigateToSelectedCategory()">Go</button>
+</div>
 <p>
-    <a asp-action="Create"> Create New</a>
+	<form action="@Url.Action("Create")" style="display:inline">
+		<button type="submit" style="border-radius:8px; text-decoration: none" class="btn-link">Create New</button>
+	</form>
 </p>
 <table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.ProductId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ProductName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UnitPrice)
-            </th>
-            <th>
-
-            </th>
-            <th>
-
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ProductId)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.ProductName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UnitPrice)
-                </td>
-
-                <td>
-                    <form action="@Url.Action("Edit", new { id = item.ProductId })" style="display:inline">
-                        <button type="submit" class="btn-link">Edit</button>
-                    </form>
-                </td>
-                <td>
-                    <form action="@Url.Action("Detail", new { id = item.ProductId })" style="display:inline">
-                        <button type="submit" class="btn-link">View Detail</button>
-                    </form>
-                </td>
-                <td>
-                    <form method="post" action="@Url.Action("Delete", new { id = item.ProductId })" style="display:inline">
-                        <button type="submit" class="btn-link" style="border: none" onclick="return confirmDelete()">Delete</button>
-                    </form>
-                    <script>
-                        function confirmDelete() {
-                            return confirm("Are you sure you want to delete this item?");
-                        }
-                    </script>
-                </td>
-            </tr>
-        }
-    </tbody>
+	<thead>
+		<tr>
+			<th>
+				@Html.DisplayNameFor(model => model.ProductId)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.ProductName)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.UnitPrice)
+			</th>
+			<th>
+				Actions
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in Model)
+		{
+			<tr>
+				<td>
+					@Html.DisplayFor(modelItem => item.ProductId)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.ProductName)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.UnitPrice)
+				</td>
+				<td>
+					<form action="@Url.Action("Detail", new { id = item.ProductId })" style="display:inline">
+						<button type="submit" style="border-radius:8px; text-decoration: none" class="btn-link">View Detail</button>
+					</form>
+					<form action="@Url.Action("Edit", new { id = item.ProductId })" style="display:inline">
+						<button type="submit" style="border-radius:8px; text-decoration: none" class="btn-link">Edit</button>
+					</form>
+					<form method="post" action="@Url.Action("Delete", new { id = item.ProductId })" style="display:inline">
+						<button type="submit" style="border-radius:8px; text-decoration: none" class="btn-link" onclick="return confirmDelete()">Delete</button>
+					</form>
+					<script>
+						function confirmDelete() {
+							return confirm("Are you sure you want to delete this item?");
+						}
+					</script>
+				</td>
+			</tr>
+		}
+	</tbody>
 </table>
+<script>
+	function onCategoryChange() {
+		var dropdown = document.getElementById("category");
+		var selectedValue = dropdown.options[dropdown.selectedIndex].value;
+		var goButton = document.getElementById("goButton");
+
+		if (selectedValue === "") {
+			goButton.disabled = true;
+		} else {
+			goButton.disabled = false;
+		}
+	}
+
+	function navigateToSelectedCategory() {
+		var categoryId = document.getElementById("category").value;
+
+		if (categoryId === "") {
+			window.location.href = '/Product/Index';
+		} else {
+			var url = '/Product/Index?categoryId=' + categoryId;
+			window.location.href = url;
+		}
+	}
+</script>

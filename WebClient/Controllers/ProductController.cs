@@ -35,31 +35,32 @@ namespace WebClient.Controllers
             return categoryList;
         }
 
-        public async Task<IActionResult> Index()
-        {
-            HttpResponseMessage productResponse = await client.GetAsync(ProductApiUrl);
-            string productStrData = await productResponse.Content.ReadAsStringAsync();
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-            };
-            List<Product> productList = JsonSerializer.Deserialize<List<Product>>(productStrData, options);
+		public async Task<IActionResult> Index(int? categoryId)
+		{
+			HttpResponseMessage productResponse = await client.GetAsync(ProductApiUrl);
+			string productStrData = await productResponse.Content.ReadAsStringAsync();
+			var options = new JsonSerializerOptions
+			{
+				PropertyNameCaseInsensitive = true,
+			};
+			List<Product> productList = JsonSerializer.Deserialize<List<Product>>(productStrData, options);
+			List<Category> categoryList = await GetCategories();
+			if (categoryId != null)
+			{
+				productList = productList.Where(p => p.CategoryId == categoryId).ToList();
+			}
+			foreach (var product in productList)
+			{
+				Category category = categoryList.FirstOrDefault(c => c.CategoryId == product.CategoryId);
+				product.Category = category;
+			}
+			ViewData["Categories"] = new SelectList(categoryList, "CategoryId", "CategoryName");
+			ViewData["CurrentCategoryId"] = categoryId;
+			return View(productList);
+		}
 
-            List<Category> categoryList = await GetCategories();
-            foreach (var product in productList)
-            {
-                Category category = categoryList.FirstOrDefault(c => c.CategoryId == product.CategoryId);
-                product.Category = category;
-            }
-
-            ViewData["Categories"] = new SelectList(categoryList, "CategoryId", "CategoryName");
-            ViewData["CurrentCategoryId"] = null;
-
-            return View(productList);
-        }
-
-        //Create
-        public async Task<IActionResult> Create()
+		//Create
+		public async Task<IActionResult> Create()
         {
             List<Category> categoryList = await GetCategories();
             ViewData["Categories"] = new SelectList(categoryList, "CategoryId", "CategoryName");
@@ -75,7 +76,6 @@ namespace WebClient.Controllers
             {
                 return RedirectToAction("Index");
             }
-
             return BadRequest();
         }
 
@@ -96,7 +96,6 @@ namespace WebClient.Controllers
                 Product product = JsonSerializer.Deserialize<Product>(productStrData, options);
                 return View(product);
             }
-
             return NotFound();
         }
 
@@ -143,7 +142,6 @@ namespace WebClient.Controllers
 
                 return View(product);
             }
-
             return NotFound();
         }
     }
