@@ -12,11 +12,11 @@ namespace Repository.Repository
 {
 	public class CategoryRepository : ICategoryRepository
 	{
-		public List<Category> GetCategories()
-		{
-			return CategoryDAO.GetCategories();
-		}
+        public List<Category> GetCategories()
+        {
+            return CategoryDAO.GetAllCategories();
+        }
 
-        public Category GetCategoryById(int id) =>  CategoryDAO.GetCategoryById(id);
+        public Category GetCategoryById(int id) => CategoryDAO.GetCategoryById(id);
     }
 }

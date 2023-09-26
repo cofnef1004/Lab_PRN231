@@ -1,11 +1,10 @@
-﻿
-using BusinessObjects.Models;
+﻿using BusinessObjects.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository.Interface;
 using Repository.Repository;
 
-namespace eStoreAPI.Controllers
+namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -20,6 +19,7 @@ namespace eStoreAPI.Controllers
         [HttpGet("{categoryId}")]
         public IActionResult GetCategory(int categoryId)
         {
+            // Lấy thông tin chi tiết của Category từ cơ sở dữ liệu hoặc bất kỳ nguồn dữ liệu nào khác
             var category = repository.GetCategoryById(categoryId);
 
             if (category == null)

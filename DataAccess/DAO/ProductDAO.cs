@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,82 +10,59 @@ namespace DataAccess.DAO
 {
     public class ProductDAO
     {
-        /*		private readonly MyDbContext _context = new MyDbContext();
-
-                public ProductDAO(MyDbContext context)
-                {
-                    _context = context;
-                }*/
-
-        public static List<Product> GetAllProducts()
+        MyDbContext _context;
+        public ProductDAO(MyDbContext context)
         {
-            using (var _context = new MyDbContext())
-            {
-                return _context.Products.ToList();
-            }
+            _context = context;
+        }
+        public List<Product> GetProducts()
+        {
+            return _context.Products.Include(p => p.Category).ToList();
         }
 
-        public static Product GetProductById(int productId)
+        public List<Product> GetProductsByName(string name)
         {
-            using (var _context = new MyDbContext())
-            {
-                return _context.Products.SingleOrDefault(p => p.ProductId == productId);
-            }
+            return _context.Products.Include(p => p.Category).Where(p => p.ProductName.Contains(name)).ToList();
         }
 
-        public static void SaveProduct(Product product)
+        public List<Product> GetProductsByPrice(decimal minPrice, decimal maxPrice)
         {
-            using (var _context = new MyDbContext())
-            {
-                var category = _context.Categories.Find(product.CategoryId);
-                var _product = new Product()
-                {
-                    CategoryId = product.CategoryId,
-                    ProductName = product.ProductName,
-                    UnitPrice = product.UnitPrice,
-                    UnitsInStock = product.UnitsInStock,
-                    Category = category
+            return _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.UnitPrice >= minPrice && p.UnitPrice <= maxPrice)
+                .ToList();
+        }
 
-                };
-                _context.Products.Add(_product);
+        public Product GetProductById(int productId)
+        {
+            return _context.Products.SingleOrDefault(p => p.ProductId == productId);
+        }
+        public void CreateProduct(Product p)
+        {
+            _context.Products.Add(p);
+            _context.SaveChanges();
+        }
+
+        public void UpdateProduct(Product product)
+        {
+            var p = _context.Products.FirstOrDefault(x => x.ProductId == product.ProductId);
+            if (p != null)
+            {
+                p.ProductName = product.ProductName;
+                p.UnitPrice = product.UnitPrice;
+                p.UnitsInStock = p.UnitsInStock;
+                p.CategoryId = product.CategoryId;
                 _context.SaveChanges();
             }
         }
-
-
-        public static void UpdateProduct(Product product)
+        public void DeleteProduct(int id)
         {
-            using (var _context = new MyDbContext())
+            var p = _context.Products.FirstOrDefault(x => x.ProductId == id);
+            if (p != null)
             {
-                var category = _context.Categories.Find(product.CategoryId);
-                var product1 = _context.Products.SingleOrDefault(p => p.ProductId == product.ProductId);
-                if (product1 != null)
-                {
-                    var _product1 = new Product()
-                    {
-                        CategoryId = product.CategoryId,
-                        ProductName = product.ProductName,
-                        UnitPrice = product.UnitPrice,
-                        UnitsInStock = product.UnitsInStock,
-                        Category = category
-                    };
-                    _context.Products.Update(product1);
-                    _context.SaveChanges();
-                }
+                _context.Products.Remove(p);
+                _context.SaveChanges();
             }
         }
-
-        public static void DeleteProduct(Product product)
-        {
-            using (var _context = new MyDbContext())
-            {
-                var product1 = _context.Products.SingleOrDefault(p => p.ProductId == product.ProductId);
-                if (product1 != null)
-                {
-                    _context.Products.Remove(product1);
-                    _context.SaveChanges();
-                }
-            }
-        }
-    }
+	}
 }

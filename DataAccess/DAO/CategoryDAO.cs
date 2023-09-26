@@ -11,15 +11,13 @@ namespace DataAccess.DAO
 {
 	public class CategoryDAO
 	{
-		public static List<Category> GetCategories()
-		{
-			using (var context = new MyDbContext())
-			{
-				var list = new List<Category>();
-				list = context.Categories.ToList();
-			return list;
-			}
-		}
+        public static List<Category> GetAllCategories()
+        {
+            using (var _context = new MyDbContext())
+            {
+                return _context.Categories.ToList();
+            }
+        }
 
         public static Category GetCategoryById(int cateId)
         {

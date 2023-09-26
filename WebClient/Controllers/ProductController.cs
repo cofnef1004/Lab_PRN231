@@ -8,18 +8,18 @@ using System.Text.Json;
 
 namespace WebClient.Controllers
 {
-	public class ProductController : Controller
-	{
-		private readonly HttpClient client = null;
-		private string ProductApiUrl = "";
+    public class ProductController : Controller
+    {
+        private readonly HttpClient client = null;
+        private string ProductApiUrl = "";
         private string CategoryApiUrl = "";
 
         public ProductController()
-		{
-			client = new HttpClient();
-			var contentType = new MediaTypeWithQualityHeaderValue("application/json");
-			client.DefaultRequestHeaders.Accept.Add(contentType);
-			ProductApiUrl = "http://localhost:5175/api/Products";
+        {
+            client = new HttpClient();
+            var contentType = new MediaTypeWithQualityHeaderValue("application/json");
+            client.DefaultRequestHeaders.Accept.Add(contentType);
+            ProductApiUrl = "http://localhost:5175/api/Product";
             CategoryApiUrl = "http://localhost:5175/api/Category";
         }
 
@@ -35,7 +35,7 @@ namespace WebClient.Controllers
             return categoryList;
         }
 
-        public async Task<IActionResult> Index(int? categoryId)
+        public async Task<IActionResult> Index()
         {
             HttpResponseMessage productResponse = await client.GetAsync(ProductApiUrl);
             string productStrData = await productResponse.Content.ReadAsStringAsync();
@@ -46,62 +46,105 @@ namespace WebClient.Controllers
             List<Product> productList = JsonSerializer.Deserialize<List<Product>>(productStrData, options);
 
             List<Category> categoryList = await GetCategories();
-
-            if (categoryId != null)
-            {
-                productList = productList.Where(p => p.CategoryId == categoryId).ToList();
-            }
-
             foreach (var product in productList)
             {
                 Category category = categoryList.FirstOrDefault(c => c.CategoryId == product.CategoryId);
                 product.Category = category;
             }
-/*            ViewData["Categories"] = new SelectList(categoryList, "CategoryId", "CategoryName");
-            ViewData["CurrentCategoryId"] = categoryId;*/
+
+            ViewData["Categories"] = new SelectList(categoryList, "CategoryId", "CategoryName");
+            ViewData["CurrentCategoryId"] = null;
 
             return View(productList);
         }
 
-        public ActionResult Create()
+        //Create
+        public async Task<IActionResult> Create()
         {
+            List<Category> categoryList = await GetCategories();
+            ViewData["Categories"] = new SelectList(categoryList, "CategoryId", "CategoryName");
             return View();
-		}
+        }
 
-		// POST
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(Product p)
-		{
-			if (ModelState.IsValid)
-			{
-				var jsonContent = JsonSerializer.Serialize(p);
-				var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+        [HttpPost]
+        public async Task<IActionResult> Create(Product product)
+        {
+            HttpResponseMessage response = await client.PostAsJsonAsync(ProductApiUrl, product);
 
-				HttpResponseMessage response = await client.PostAsync(ProductApiUrl, content);
-				if (response.IsSuccessStatusCode)
-				{
-					return RedirectToAction("Index");
-				}
-				else
-				{
-					ModelState.AddModelError("", "Error");
-				}
-			}
-			return View(p);
-		}
+            if (response.IsSuccessStatusCode)
+            {
+                return RedirectToAction("Index");
+            }
 
-		[HttpPost]
-		public async Task<IActionResult> Delete(int id)
-		{
-			HttpResponseMessage response = await client.DeleteAsync($"{ProductApiUrl}/{id}");
+            return BadRequest();
+        }
 
-			if (response.IsSuccessStatusCode)
-			{
-				return RedirectToAction("Index");
-			}
+        //Update
+        public async Task<IActionResult> Edit(int id)
+        {
+            List<Category> categoryList = await GetCategories();
+            ViewData["Categories"] = new SelectList(categoryList, "CategoryId", "CategoryName");
 
-			return NotFound();
-		}
-	}
+            HttpResponseMessage productResponse = await client.GetAsync($"{ProductApiUrl}/{id}");
+            if (productResponse.IsSuccessStatusCode)
+            {
+                string productStrData = await productResponse.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                };
+                Product product = JsonSerializer.Deserialize<Product>(productStrData, options);
+                return View(product);
+            }
+
+            return NotFound();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, Product product)
+        {
+            HttpResponseMessage response = await client.PutAsJsonAsync($"{ProductApiUrl}/{id}", product);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return RedirectToAction("Index");
+            }
+            return BadRequest();
+        }
+
+        //Delete
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            HttpResponseMessage response = await client.DeleteAsync($"{ProductApiUrl}/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                return RedirectToAction("Index");
+            }
+            return NotFound();
+        }
+
+        //Detail
+        public async Task<IActionResult> Detail(int id)
+        {
+            HttpResponseMessage productResponse = await client.GetAsync($"{ProductApiUrl}/{id}");
+            if (productResponse.IsSuccessStatusCode)
+            {
+                string productStrData = await productResponse.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                };
+                Product product = JsonSerializer.Deserialize<Product>(productStrData, options);
+
+                List<Category> categoryList = await GetCategories();
+                Category category = categoryList.FirstOrDefault(c => c.CategoryId == product.CategoryId);
+                product.Category = category;
+
+                return View(product);
+            }
+
+            return NotFound();
+        }
+    }
 }

@@ -10,8 +10,7 @@ namespace Repository.Interface
 {
 	public interface ICategoryRepository
 	{
-		List<Category> GetCategories();
-		Category GetCategoryById(int id);
-
+        List<Category> GetCategories();
+        Category GetCategoryById(int id);
     }
 }

@@ -1,0 +1,25 @@
+﻿@model BusinessObjects.Models.Product
+
+<h2>Product Detail</h2>
+
+<div>
+    <h4>Product Name:</h4>
+    <p>@Model.ProductName</p>
+</div>
+
+<div>
+    <h4>Category:</h4>
+    <p>@Model.Category.CategoryName</p>
+</div>
+
+<div>
+    <h4>Price:</h4>
+    <p>@Model.UnitPrice</p>
+</div>
+
+<div>
+    <h4>Units In Stock:</h4>
+    <p>@Model.UnitsInStock</p>
+</div>
+
+<a asp-action="Index">Back to List</a>
