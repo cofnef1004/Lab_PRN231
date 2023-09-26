@@ -50,7 +50,7 @@ namespace DataAccess.DAO
             {
                 p.ProductName = product.ProductName;
                 p.UnitPrice = product.UnitPrice;
-                p.UnitsInStock = p.UnitsInStock;
+                p.UnitsInStock = product.UnitsInStock;
                 p.CategoryId = product.CategoryId;
                 _context.SaveChanges();
             }
